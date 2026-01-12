@@ -65,6 +65,9 @@
 	import ModuleList from './Sidebar/ModuleList.svelte';
 	import Note from '../icons/Note.svelte';
 	import Document from '../icons/Document.svelte';
+	import User from '../icons/User.svelte';
+	import Badge from '../common/Badge.svelte';
+	import { pendingDiffsCount } from '$lib/stores/memory';
 	import { slide } from 'svelte/transition';
 	import HotkeyHint from '../common/HotkeyHint.svelte';
 	import { key } from 'vega';
@@ -778,6 +781,33 @@
 					</div>
 				{/if}
 
+			{#if $youlabMode && $user}
+				<div class="">
+					<Tooltip content={$i18n.t('You')} placement="right">
+						<a
+							class=" cursor-pointer flex rounded-xl hover:bg-gray-100 dark:hover:bg-gray-850 transition group relative"
+							href="/you"
+							on:click={async (e) => {
+								e.stopImmediatePropagation();
+								e.preventDefault();
+
+								goto('/you');
+								itemClickHandler();
+							}}
+							draggable="false"
+							aria-label={$i18n.t('You')}
+						>
+							<div class=" self-center flex items-center justify-center size-9">
+								<User className="size-4.5" />
+							</div>
+							{#if $pendingDiffsCount > 0}
+								<div class="absolute -top-0.5 -right-0.5 size-2.5 bg-yellow-500 rounded-full" />
+							{/if}
+						</a>
+					</Tooltip>
+				</div>
+			{/if}
+
 				{#if !$youlabMode && ($user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools)}
 					<div class="">
 						<Tooltip content={$i18n.t('Workspace')} placement="right">
@@ -1027,6 +1057,31 @@
 								<div class="flex self-center translate-y-[0.5px]">
 									<div class=" self-center text-sm font-primary">{$i18n.t('Files')}</div>
 								</div>
+							</a>
+						</div>
+					{/if}
+
+					{#if $youlabMode && $user}
+						<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
+							<a
+								id="sidebar-you-button"
+								class="grow flex items-center space-x-3 rounded-2xl px-2.5 py-2 hover:bg-gray-100 dark:hover:bg-gray-900 transition"
+								href="/you"
+								on:click={itemClickHandler}
+								draggable="false"
+								aria-label={$i18n.t('You')}
+							>
+								<div class="self-center">
+									<User className="size-4.5" strokeWidth="2" />
+								</div>
+
+								<div class="flex flex-1 self-center translate-y-[0.5px]">
+									<div class=" self-center text-sm font-primary">{$i18n.t('You')}</div>
+								</div>
+
+								{#if $pendingDiffsCount > 0}
+									<Badge type="warning" content={$pendingDiffsCount.toString()} />
+								{/if}
 							</a>
 						</div>
 					{/if}

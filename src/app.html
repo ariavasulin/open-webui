@@ -47,12 +47,43 @@
 				const prefersDarkTheme = window.matchMedia('(prefers-color-scheme: dark)').matches;
 
 				if (!localStorage?.theme) {
-					localStorage.theme = 'system';
+					localStorage.theme = 'youlab-dark';
 				}
 
 				if (localStorage.theme === 'system') {
 					document.documentElement.classList.add(prefersDarkTheme ? 'dark' : 'light');
 					metaThemeColorTag.setAttribute('content', prefersDarkTheme ? '#171717' : '#ffffff');
+				} else if (localStorage.theme === 'youlab-dark') {
+					// YouLab dark: semantic meaning preserved (low = light text, high = dark bg)
+					document.documentElement.style.setProperty('--color-gray-50', '#e8ebe9');
+					document.documentElement.style.setProperty('--color-gray-100', '#d8dcd9');
+					document.documentElement.style.setProperty('--color-gray-200', '#c5c9c6');
+					document.documentElement.style.setProperty('--color-gray-300', '#a0a0a0');
+					document.documentElement.style.setProperty('--color-gray-400', '#909090');
+					document.documentElement.style.setProperty('--color-gray-500', '#707070');
+					document.documentElement.style.setProperty('--color-gray-600', '#505252');
+					document.documentElement.style.setProperty('--color-gray-700', '#404242');
+					document.documentElement.style.setProperty('--color-gray-800', '#2a2c2c');
+					document.documentElement.style.setProperty('--color-gray-850', '#222424');
+					document.documentElement.style.setProperty('--color-gray-900', '#1d1f20');
+					document.documentElement.style.setProperty('--color-gray-950', '#141516');
+					document.documentElement.classList.add('dark');
+					metaThemeColorTag.setAttribute('content', '#1d1f20');
+				} else if (localStorage.theme === 'youlab') {
+					document.documentElement.style.setProperty('--color-gray-50', '#f5f6f6');
+					document.documentElement.style.setProperty('--color-gray-100', '#e8e9e9');
+					document.documentElement.style.setProperty('--color-gray-200', '#d4d5d5');
+					document.documentElement.style.setProperty('--color-gray-300', '#b0b1b1');
+					document.documentElement.style.setProperty('--color-gray-400', '#8c8d8d');
+					document.documentElement.style.setProperty('--color-gray-500', '#686969');
+					document.documentElement.style.setProperty('--color-gray-600', '#545555');
+					document.documentElement.style.setProperty('--color-gray-700', '#424242');
+					document.documentElement.style.setProperty('--color-gray-800', '#2e2f2f');
+					document.documentElement.style.setProperty('--color-gray-850', '#242525');
+					document.documentElement.style.setProperty('--color-gray-900', '#1a1b1b');
+					document.documentElement.style.setProperty('--color-gray-950', '#101111');
+					document.documentElement.classList.add('light');
+					metaThemeColorTag.setAttribute('content', '#f5f6f6');
 				} else if (localStorage.theme === 'oled-dark') {
 					document.documentElement.style.setProperty('--color-gray-800', '#101010');
 					document.documentElement.style.setProperty('--color-gray-850', '#050505');
@@ -103,7 +134,7 @@
 			})();
 		</script>
 
-		<title>Open WebUI</title>
+		<title>YouLab</title>
 
 		%sveltekit.head%
 	</head>

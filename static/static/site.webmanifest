@@ -1,6 +1,6 @@
 {
-  "name": "Open WebUI",
-  "short_name": "WebUI",
+  "name": "YouLab",
+  "short_name": "YouLab",
   "icons": [
     {
       "src": "/static/web-app-manifest-192x192.png",
@@ -15,7 +15,7 @@
       "purpose": "maskable"
     }
   ],
-  "theme_color": "#ffffff",
-  "background_color": "#ffffff",
+  "theme_color": "#1d1f20",
+  "background_color": "#1d1f20",
   "display": "standalone"
 }

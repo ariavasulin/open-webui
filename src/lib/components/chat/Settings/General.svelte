@@ -14,7 +14,7 @@
 	export let getModels: Function;
 
 	// General
-	let themes = ['dark', 'light', 'oled-dark'];
+	let themes = ['dark', 'light', 'oled-dark', 'youlab', 'youlab-dark'];
 	let selectedTheme = 'system';
 
 	let languages: Awaited<ReturnType<typeof getLanguages>> = [];
@@ -120,13 +120,13 @@
 	});
 
 	const applyTheme = (_theme: string) => {
-		let themeToApply = _theme === 'oled-dark' ? 'dark' : _theme === 'her' ? 'light' : _theme;
+		let themeToApply = _theme === 'oled-dark' ? 'dark' : _theme === 'her' ? 'light' : _theme === 'youlab' ? 'light' : _theme === 'youlab-dark' ? 'dark' : _theme;
 
 		if (_theme === 'system') {
 			themeToApply = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
 		}
 
-		if (themeToApply === 'dark' && !_theme.includes('oled')) {
+		if (themeToApply === 'dark' && !_theme.includes('oled') && !_theme.includes('youlab')) {
 			document.documentElement.style.setProperty('--color-gray-800', '#333');
 			document.documentElement.style.setProperty('--color-gray-850', '#262626');
 			document.documentElement.style.setProperty('--color-gray-900', '#171717');
@@ -163,7 +163,11 @@
 							? '#000000'
 							: _theme === 'her'
 								? '#983724'
-								: '#ffffff'
+								: _theme === 'youlab-dark'
+									? '#1d1f20'
+									: _theme === 'youlab'
+										? '#f5f6f6'
+										: '#ffffff'
 				);
 			}
 		}
@@ -178,6 +182,41 @@
 			document.documentElement.style.setProperty('--color-gray-900', '#000000');
 			document.documentElement.style.setProperty('--color-gray-950', '#000000');
 			document.documentElement.classList.add('dark');
+		}
+
+		// YouLab dark theme - iA Writer inspired colors
+		// Semantic meaning preserved: low numbers = light (text), high numbers = dark (backgrounds)
+		if (_theme === 'youlab-dark') {
+			document.documentElement.style.setProperty('--color-gray-50', '#e8ebe9');
+			document.documentElement.style.setProperty('--color-gray-100', '#d8dcd9');
+			document.documentElement.style.setProperty('--color-gray-200', '#c5c9c6');
+			document.documentElement.style.setProperty('--color-gray-300', '#a0a0a0');
+			document.documentElement.style.setProperty('--color-gray-400', '#909090');
+			document.documentElement.style.setProperty('--color-gray-500', '#707070');
+			document.documentElement.style.setProperty('--color-gray-600', '#505252');
+			document.documentElement.style.setProperty('--color-gray-700', '#404242');
+			document.documentElement.style.setProperty('--color-gray-800', '#2a2c2c');
+			document.documentElement.style.setProperty('--color-gray-850', '#222424');
+			document.documentElement.style.setProperty('--color-gray-900', '#1d1f20');
+			document.documentElement.style.setProperty('--color-gray-950', '#141516');
+			document.documentElement.classList.add('dark');
+		}
+
+		// YouLab light theme - iA Writer inspired colors
+		if (_theme === 'youlab') {
+			document.documentElement.style.setProperty('--color-gray-50', '#f5f6f6');
+			document.documentElement.style.setProperty('--color-gray-100', '#e8e9e9');
+			document.documentElement.style.setProperty('--color-gray-200', '#d4d5d5');
+			document.documentElement.style.setProperty('--color-gray-300', '#b0b1b1');
+			document.documentElement.style.setProperty('--color-gray-400', '#8c8d8d');
+			document.documentElement.style.setProperty('--color-gray-500', '#686969');
+			document.documentElement.style.setProperty('--color-gray-600', '#545555');
+			document.documentElement.style.setProperty('--color-gray-700', '#424242');
+			document.documentElement.style.setProperty('--color-gray-800', '#2e2f2f');
+			document.documentElement.style.setProperty('--color-gray-850', '#242525');
+			document.documentElement.style.setProperty('--color-gray-900', '#1a1b1b');
+			document.documentElement.style.setProperty('--color-gray-950', '#101111');
+			document.documentElement.classList.remove('dark');
 		}
 
 		console.log(_theme);
@@ -207,12 +246,12 @@
 						on:change={() => themeChangeHandler(selectedTheme)}
 					>
 						<option value="system">⚙️ {$i18n.t('System')}</option>
+						<option value="youlab-dark">🔬 YouLab Dark</option>
+						<option value="youlab">🔬 YouLab Light</option>
 						<option value="dark">🌑 {$i18n.t('Dark')}</option>
 						<option value="oled-dark">🌃 {$i18n.t('OLED Dark')}</option>
 						<option value="light">☀️ {$i18n.t('Light')}</option>
 						<option value="her">🌷 Her</option>
-						<!-- <option value="rose-pine dark">🪻 {$i18n.t('Rosé Pine')}</option>
-						<option value="rose-pine-dawn light">🌷 {$i18n.t('Rosé Pine Dawn')}</option> -->
 					</select>
 				</div>
 			</div>

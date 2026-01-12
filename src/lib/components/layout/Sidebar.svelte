@@ -26,7 +26,8 @@
 		models,
 		selectedFolder,
 		WEBUI_NAME,
-		sidebarWidth
+		sidebarWidth,
+		youlabMode
 	} from '$lib/stores';
 	import { onMount, getContext, tick, onDestroy } from 'svelte';
 
@@ -61,6 +62,7 @@
 	import FolderModal from './Sidebar/Folders/FolderModal.svelte';
 	import Sidebar from '../icons/Sidebar.svelte';
 	import PinnedModelList from './Sidebar/PinnedModelList.svelte';
+	import ModuleList from './Sidebar/ModuleList.svelte';
 	import Note from '../icons/Note.svelte';
 	import Document from '../icons/Document.svelte';
 	import { slide } from 'svelte/transition';
@@ -88,6 +90,7 @@
 	let showPinnedModels = false;
 	let showChannels = false;
 	let showFolders = false;
+	let showModules = true;
 
 	let folders = {};
 	let folderRegistry = {};
@@ -672,6 +675,7 @@
 					>
 						<div class=" self-center flex items-center justify-center size-9">
 							<img
+								crossorigin="anonymous"
 								src="{WEBUI_BASE_URL}/static/favicon.png"
 								class="sidebar-new-chat-icon size-6 rounded-full group-hover:hidden"
 								alt=""
@@ -774,7 +778,7 @@
 					</div>
 				{/if}
 
-				{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
+				{#if !$youlabMode && ($user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools)}
 					<div class="">
 						<Tooltip content={$i18n.t('Workspace')} placement="right">
 							<a
@@ -1027,7 +1031,7 @@
 						</div>
 					{/if}
 
-					{#if $user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools}
+					{#if !$youlabMode && ($user?.role === 'admin' || $user?.permissions?.workspace?.models || $user?.permissions?.workspace?.knowledge || $user?.permissions?.workspace?.prompts || $user?.permissions?.workspace?.tools)}
 						<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
 							<a
 								id="sidebar-workspace-button"
@@ -1062,7 +1066,7 @@
 					{/if}
 				</div>
 
-				{#if ($models ?? []).length > 0 && (($settings?.pinnedModels ?? []).length > 0 || $config?.default_pinned_models)}
+				{#if !$youlabMode && ($models ?? []).length > 0 && (($settings?.pinnedModels ?? []).length > 0 || $config?.default_pinned_models)}
 					<Folder
 						id="sidebar-models"
 						bind:open={showPinnedModels}
@@ -1072,6 +1076,20 @@
 						dragAndDrop={false}
 					>
 						<PinnedModelList bind:selectedChatId {shiftKey} />
+					</Folder>
+				{/if}
+
+				<!-- YouLab Modules Section -->
+				{#if $youlabMode}
+					<Folder
+						id="sidebar-modules"
+						bind:open={showModules}
+						className="px-2 mt-0.5"
+						name={$i18n.t('Modules')}
+						chevron={false}
+						dragAndDrop={false}
+					>
+						<ModuleList />
 					</Folder>
 				{/if}
 

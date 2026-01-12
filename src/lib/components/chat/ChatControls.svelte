@@ -10,7 +10,8 @@
 		showCallOverlay,
 		showOverview,
 		showArtifacts,
-		showEmbeds
+		showEmbeds,
+		youlabMode
 	} from '$lib/stores';
 
 	import Controls from './Controls/Controls.svelte';
@@ -151,6 +152,7 @@
 	}
 </script>
 
+{#if !$youlabMode}
 {#if !largeScreen}
 	{#if $showControls}
 		<Drawer
@@ -307,4 +309,5 @@
 			</div>
 		{/if}
 	</Pane>
+{/if}
 {/if}

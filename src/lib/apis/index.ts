@@ -1663,11 +1663,25 @@ export interface ModelConfig {
 	params: ModelParams;
 }
 
+// YouLab-specific module metadata for course-based navigation
+export interface YouLabModuleMeta {
+	course_id: string;
+	module_index: number;
+	status?: 'locked' | 'available' | 'in_progress' | 'completed';
+	welcome_message?: string;
+	unlock_criteria?: {
+		previous_module?: string;
+		min_interactions?: number;
+	};
+}
+
 export interface ModelMeta {
 	toolIds: never[];
 	description?: string;
 	capabilities?: object;
 	profile_image_url?: string;
+	// YouLab extension: marks this model as a course module
+	youlab_module?: YouLabModuleMeta;
 }
 
 export interface ModelParams {}

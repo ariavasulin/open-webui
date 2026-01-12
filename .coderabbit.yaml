@@ -1,0 +1,146 @@
+# CodeRabbit Configuration for Open WebUI Fork
+# This is a fork of open-webui/open-webui with YouLab customizations
+# Docs: https://docs.coderabbit.ai/reference/configuration
+
+language: "en-US"
+tone_instructions: "Be concise. Focus on bugs, security issues, and best practices. This is a fork being customized for YouLab - flag anything that deviates from good patterns."
+
+reviews:
+  # Assertive catches more issues
+  profile: "assertive"
+
+  # Warnings only, no blocking
+  request_changes_workflow: false
+
+  # Generate PR summaries
+  high_level_summary: true
+  poem: false
+  review_status: true
+  collapse_walkthrough: false
+
+  # Auto-review settings
+  auto_review:
+    enabled: true
+    drafts: false
+
+  # Exclude generated/vendor code
+  path_filters:
+    - "!**/__pycache__/**"
+    - "!**/.venv/**"
+    - "!**/node_modules/**"
+    - "!**/build/**"
+    - "!**/dist/**"
+    - "!**/*.min.js"
+    - "!**/*.min.css"
+    - "!**/package-lock.json"
+    - "!**/static/**"
+
+  # Path-specific review instructions
+  path_instructions:
+    - path: "backend/**/*.py"
+      instructions: |
+        Python backend checks:
+        - Type hints on public functions
+        - Proper async/await patterns (FastAPI)
+        - SQL injection prevention (use parameterized queries)
+        - Authentication/authorization on sensitive endpoints
+        - Proper error handling with meaningful messages
+        - No hardcoded secrets or credentials
+
+    - path: "backend/open_webui/apps/**/*.py"
+      instructions: |
+        API endpoint checks:
+        - Input validation on all user inputs
+        - Proper HTTP status codes
+        - Rate limiting considerations for public endpoints
+        - CORS configuration review
+
+    - path: "src/lib/components/**/*.svelte"
+      instructions: |
+        Svelte component checks:
+        - XSS prevention (escape user content)
+        - Proper reactive declarations
+        - Accessibility (aria labels, keyboard nav)
+        - Memory leaks (cleanup subscriptions)
+        - Component prop validation
+
+    - path: "src/lib/**/*.ts"
+      instructions: |
+        TypeScript checks:
+        - Strict type usage (avoid 'any')
+        - Null/undefined handling
+        - Proper error handling in async code
+        - API response type safety
+
+    - path: "src/routes/**/*.svelte"
+      instructions: |
+        SvelteKit route checks:
+        - Proper load function patterns
+        - Authentication guards where needed
+        - SEO considerations (meta tags)
+
+  # Pre-merge checks (warnings only)
+  pre_merge_checks:
+    docstrings:
+      mode: "warning"
+      threshold: 30  # Lower threshold for fork
+    title:
+      mode: "warning"
+    custom_checks:
+      - name: "No Hardcoded Secrets"
+        mode: "warning"
+        instructions: |
+          Check for hardcoded API keys, passwords, tokens, or secrets.
+          Use environment variables instead.
+      - name: "XSS Prevention"
+        mode: "warning"
+        instructions: |
+          In Svelte components, ensure user-generated content is properly escaped.
+          Use {@html} sparingly and only with sanitized content.
+      - name: "SQL Injection"
+        mode: "warning"
+        instructions: |
+          Verify all database queries use parameterized queries.
+          No string concatenation for SQL.
+
+  # Integrated tools
+  tools:
+    # Python
+    ruff:
+      enabled: true
+
+    # Security
+    semgrep:
+      enabled: true
+    gitleaks:
+      enabled: true
+
+    # JavaScript/TypeScript
+    eslint:
+      enabled: true
+    biome:
+      enabled: true
+
+    # Shell
+    shellcheck:
+      enabled: true
+
+    # Markdown
+    markdownlint:
+      enabled: true
+
+# Knowledge base
+knowledge_base:
+  opt_out: false
+  code_guidelines: true
+  learnings:
+    scope: "local"
+
+# Docstring generation
+code_generation:
+  docstrings:
+    path_instructions:
+      - path: "backend/**/*.py"
+        instructions: "Use Google-style docstrings with Args, Returns, Raises sections"
+      - path: "src/**/*.ts"
+        instructions: "Use TSDoc format with @param, @returns, @example tags"

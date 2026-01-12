@@ -29,7 +29,10 @@ export const socket: Writable<null | Socket> = writable(null);
 export const activeUserIds: Writable<null | string[]> = writable(null);
 export const USAGE_POOL: Writable<null | string[]> = writable(null);
 
-export const theme = writable('system');
+export const theme = writable('youlab-dark');
+
+// YouLab-specific mode: hides Workspace, Controls, Arena, and other OpenWebUI-specific features
+export const youlabMode = writable(true);
 
 export const shortCodesToEmojis = writable(
 	Object.entries(emojiShortCodes).reduce((acc, [key, value]) => {

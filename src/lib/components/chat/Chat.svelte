@@ -68,6 +68,7 @@
 		updateChatById,
 		updateChatFolderIdById
 	} from '$lib/apis/chats';
+	import { ensureModuleFolder } from '$lib/utils/folders';
 	import { generateOpenAIChatCompletion } from '$lib/apis/openai';
 	import { processWeb, processWebSearch, processYoutubeVideo } from '$lib/apis/retrieval';
 	import { getAndUpdateUserLocation, getUserSettings } from '$lib/apis/users';
@@ -1969,7 +1970,10 @@
 							messages.at(1)?.role === 'user')) &&
 					(selectedModels[0] === model.id || atSelectedModel !== undefined)
 						? {
-								title_generation: $settings?.title?.auto ?? true,
+								// Disable auto title for youlab modules (they use custom titles)
+								title_generation: model?.info?.meta?.youlab_module
+									? false
+									: ($settings?.title?.auto ?? true),
 								tags_generation: $settings?.autoTags ?? true
 							}
 						: {}),
@@ -2250,11 +2254,35 @@
 		let _chatId = $chatId;
 
 		if (!$temporaryChatEnabled) {
+			// Check if this is a module chat that needs special handling
+			const model = $models.find((m) => m.id === selectedModels[0]);
+			const hasYoulabModule = model?.info?.meta?.youlab_module;
+			let isModuleChat = $selectedFolder?.meta?.type === 'module' || hasYoulabModule;
+
+			// If model has youlab_module but selectedFolder isn't set, ensure the folder exists
+			let folderId = $selectedFolder?.id;
+			if (hasYoulabModule && !folderId) {
+				folderId = await ensureModuleFolder(localStorage.token, model.id, model.name);
+				isModuleChat = true;
+			}
+
+			// Generate title - use module name + date for module chats
+			let chatTitle = $i18n.t('New Chat');
+			if (isModuleChat) {
+				const moduleName = model?.name || $selectedFolder?.name || 'Chat';
+				const date = new Date().toLocaleDateString('en-US', {
+					month: 'short',
+					day: 'numeric',
+					year: 'numeric'
+				});
+				chatTitle = `${moduleName} - ${date}`;
+			}
+
 			chat = await createNewChat(
 				localStorage.token,
 				{
 					id: _chatId,
-					title: $i18n.t('New Chat'),
+					title: chatTitle,
 					models: selectedModels,
 					system: $settings.system ?? undefined,
 					params: params,
@@ -2263,7 +2291,7 @@
 					tags: [],
 					timestamp: Date.now()
 				},
-				$selectedFolder?.id
+				folderId
 			);
 
 			_chatId = chat.id;

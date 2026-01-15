@@ -1224,13 +1224,14 @@
 								initChatList();
 							}}
 							on:update={() => {
+								initFolders();
 								initChatList();
 							}}
 							on:import={(e) => {
 								const { folderId, items } = e.detail;
 								importChatHandler(items, false, folderId);
 							}}
-							on:change={async () => {
+							on:change={() => {
 								initChatList();
 							}}
 						/>

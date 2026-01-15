@@ -2344,7 +2344,16 @@ async def healthcheck_with_db():
     return {"status": True}
 
 
-app.mount("/static", StaticFiles(directory=STATIC_DIR), name="static")
+# Wrap StaticFiles with CORS middleware so it works with dev server on different port
+static_app = StaticFiles(directory=STATIC_DIR)
+static_app = CORSMiddleware(
+    static_app,
+    allow_origins=CORS_ALLOW_ORIGIN,
+    allow_credentials=True,
+    allow_methods=["*"],
+    allow_headers=["*"],
+)
+app.mount("/static", static_app, name="static")
 
 
 @app.get("/cache/{path:path}")
@@ -2375,9 +2384,17 @@ applications.get_swagger_ui_html = swagger_ui_html
 
 if os.path.exists(FRONTEND_BUILD_DIR):
     mimetypes.add_type("text/javascript", ".js")
+    spa_app = SPAStaticFiles(directory=FRONTEND_BUILD_DIR, html=True)
+    spa_app = CORSMiddleware(
+        spa_app,
+        allow_origins=CORS_ALLOW_ORIGIN,
+        allow_credentials=True,
+        allow_methods=["*"],
+        allow_headers=["*"],
+    )
     app.mount(
         "/",
-        SPAStaticFiles(directory=FRONTEND_BUILD_DIR, html=True),
+        spa_app,
         name="spa-static-files",
     )
 else:

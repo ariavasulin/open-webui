@@ -66,8 +66,8 @@
 		})
 		.sort((a, b) => a.module_index - b.module_index);
 
-	// Use real modules if available, otherwise show demo modules
-	$: modules = realModules.length > 0 ? realModules : demoModules;
+	// Use real modules if available, fallback to demo modules only in dev mode
+	$: modules = realModules.length > 0 ? realModules : (import.meta.env.DEV ? demoModules : []);
 </script>
 
 <div class="mt-0.5 pb-1.5" id="module-list">

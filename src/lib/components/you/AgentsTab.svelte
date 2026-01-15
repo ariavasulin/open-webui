@@ -12,24 +12,6 @@
 	let agents: BackgroundAgent[] = [];
 	let expandedAgents: Set<string> = new Set();
 
-	// Mock data for development when backend is not available
-	const MOCK_AGENTS: BackgroundAgent[] = [
-		{
-			name: 'Essay Coach',
-			pendingDiffs: 2,
-			threads: [
-				{ id: 'thread_001', chatId: 'chat_abc123', date: '2026-01-10T14:30:00Z', displayDate: 'Jan 10 - Reviewed draft opening' },
-				{ id: 'thread_002', chatId: 'chat_def456', date: '2026-01-11T09:15:00Z', displayDate: 'Jan 11 - Explored family story' }
-			]
-		},
-		{
-			name: 'Learning Optimizer',
-			pendingDiffs: 1,
-			threads: [
-				{ id: 'thread_001', chatId: 'chat_ghi789', date: '2026-01-12T08:00:00Z', displayDate: 'Jan 12 - Analyzed engagement' }
-			]
-		}
-	];
 
 	onMount(async () => {
 		await loadAgents();
@@ -42,9 +24,8 @@
 		try {
 			agents = await getBackgroundAgents($user.id, localStorage.token);
 		} catch (e) {
-			console.error('Failed to load agents, using mock data:', e);
-			// Use mock data when API is not available
-			agents = MOCK_AGENTS;
+			console.error('Failed to load agents:', e);
+			agents = [];
 		}
 		loading = false;
 	}

@@ -1,8 +1,12 @@
 <script lang="ts">
 	import { getContext } from 'svelte';
+	import { goto } from '$app/navigation';
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import CheckCircle from '$lib/components/icons/CheckCircle.svelte';
 	import LockClosed from '$lib/components/icons/LockClosed.svelte';
+	import { ensureModuleFolder, getMostRecentThreadInFolder } from '$lib/utils/folders';
+	import { selectedFolder } from '$lib/stores';
+	import { getFolderById } from '$lib/apis/folders';
 
 	const i18n = getContext('i18n');
 
@@ -20,6 +24,32 @@
 		in_progress: 'text-yellow-500',
 		completed: 'text-green-500'
 	}[module.status ?? 'available'];
+
+	async function handleModuleClick(e: Event) {
+		e.preventDefault();
+
+		// Ensure folder exists for this module
+		const folderId = await ensureModuleFolder(localStorage.token, module.id, module.name);
+
+		// Set the selected folder so new chats go into it
+		const folder = await getFolderById(localStorage.token, folderId);
+		if (folder) {
+			selectedFolder.set(folder);
+		}
+
+		// Find most recent thread in the folder
+		const threadId = await getMostRecentThreadInFolder(localStorage.token, folderId);
+
+		if (threadId) {
+			// Navigate to existing thread
+			goto(`/c/${threadId}`);
+		} else {
+			// No existing thread - create new chat with this model
+			goto(`/?model=${module.id}`);
+		}
+
+		onClick();
+	}
 </script>
 
 {#if module}
@@ -31,7 +61,7 @@
 		<a
 			class="grow flex items-center space-x-2.5 rounded-xl px-2.5 py-[7px] group-hover:bg-gray-100 dark:group-hover:bg-gray-900 transition"
 			href="/?model={module.id}"
-			on:click={onClick}
+			on:click={handleModuleClick}
 			draggable="false"
 		>
 			<div class="self-center shrink-0">

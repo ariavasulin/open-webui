@@ -148,6 +148,61 @@ export async function getBlockHistory(
 	return (res ?? []).map(transformVersion);
 }
 
+export interface PendingDiff {
+	id: string;
+	block: string;
+	field: string | null;
+	operation: string;
+	reasoning: string;
+	confidence: string;
+	createdAt: string;
+	agentId: string;
+	oldValue?: string;
+	newValue?: string;
+}
+
+export async function getBlockDiffs(
+	userId: string,
+	label: string,
+	token: string
+): Promise<PendingDiff[]> {
+	let error = null;
+
+	const res = await fetch(`${YOULAB_API_BASE_URL}/users/${userId}/blocks/${label}/diffs`, {
+		method: 'GET',
+		headers: {
+			Accept: 'application/json',
+			'Content-Type': 'application/json',
+			...(token && { Authorization: `Bearer ${token}` })
+		}
+	})
+		.then(async (res) => {
+			if (!res.ok) throw await res.json();
+			return res.json();
+		})
+		.catch((err) => {
+			error = err;
+			console.error('Failed to fetch diffs:', err);
+			return null;
+		});
+
+	if (error) throw error;
+
+	// Transform snake_case to camelCase
+	return (res ?? []).map((d: any) => ({
+		id: d.id,
+		block: d.block,
+		field: d.field,
+		operation: d.operation,
+		reasoning: d.reasoning,
+		confidence: d.confidence,
+		createdAt: d.created_at,
+		agentId: d.agent_id,
+		oldValue: d.oldValue,
+		newValue: d.newValue
+	}));
+}
+
 export async function getBlockVersion(
 	userId: string,
 	label: string,
@@ -214,13 +269,14 @@ export async function restoreVersion(
 
 export async function approveDiff(
 	userId: string,
+	label: string,
 	diffId: string,
 	token: string
 ): Promise<{ diffId: string; commitSha: string }> {
 	let error = null;
 
 	const res = await fetch(
-		`${YOULAB_API_BASE_URL}/users/${userId}/blocks/diffs/${diffId}/approve`,
+		`${YOULAB_API_BASE_URL}/users/${userId}/blocks/${label}/diffs/${diffId}/approve`,
 		{
 			method: 'POST',
 			headers: {
@@ -246,6 +302,7 @@ export async function approveDiff(
 
 export async function rejectDiff(
 	userId: string,
+	label: string,
 	diffId: string,
 	token: string,
 	reason?: string
@@ -254,7 +311,7 @@ export async function rejectDiff(
 
 	const params = reason ? `?reason=${encodeURIComponent(reason)}` : '';
 	const res = await fetch(
-		`${YOULAB_API_BASE_URL}/users/${userId}/blocks/diffs/${diffId}/reject${params}`,
+		`${YOULAB_API_BASE_URL}/users/${userId}/blocks/${label}/diffs/${diffId}/reject${params}`,
 		{
 			method: 'POST',
 			headers: {

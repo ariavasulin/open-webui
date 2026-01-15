@@ -157,7 +157,9 @@
 							return item.model?.direct;
 						}
 					})
-	).filter((item) => !(item.model?.info?.meta?.hidden ?? false));
+	)
+		.filter((item) => !(item.model?.info?.meta?.hidden ?? false))
+		.filter((item) => item.model?.info?.meta?.type !== 'background_agent');
 
 	$: if (selectedTag || selectedConnectionType) {
 		resetView();
@@ -319,6 +321,7 @@
 		if (items) {
 			tags = items
 				.filter((item) => !(item.model?.info?.meta?.hidden ?? false))
+				.filter((item) => item.model?.info?.meta?.type !== 'background_agent')
 				.flatMap((item) => item.model?.tags ?? [])
 				.map((tag) => tag.name.toLowerCase());
 			// Remove duplicates and sort
@@ -448,7 +451,7 @@
 			{/if}
 
 			<div class="px-2">
-				{#if tags && items.filter((item) => !(item.model?.info?.meta?.hidden ?? false)).length > 0}
+				{#if tags && items.filter((item) => !(item.model?.info?.meta?.hidden ?? false) && item.model?.info?.meta?.type !== 'background_agent').length > 0}
 					<div
 						class=" flex w-full bg-white dark:bg-gray-850 overflow-x-auto scrollbar-none font-[450] mb-0.5"
 						on:wheel={(e) => {

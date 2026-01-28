@@ -63,17 +63,118 @@
 		lineNum?: number;
 	}
 
+	/**
+	 * Compute a proper unified diff using Myers diff algorithm (simplified).
+	 * This shows unchanged lines as context and only highlights actual changes.
+	 */
+	function computeUnifiedDiff(oldText: string, newText: string): DiffLine[] {
+		const oldLines = oldText.split('\n');
+		const newLines = newText.split('\n');
+		const result: DiffLine[] = [];
+
+		// Use a simple LCS-based diff approach
+		const lcs = computeLCS(oldLines, newLines);
+
+		let oldIdx = 0;
+		let newIdx = 0;
+		let lcsIdx = 0;
+		let oldLineNum = 1;
+
+		while (oldIdx < oldLines.length || newIdx < newLines.length) {
+			if (lcsIdx < lcs.length && oldIdx < oldLines.length && oldLines[oldIdx] === lcs[lcsIdx]) {
+				// This line is in the LCS - it's unchanged (context)
+				if (newIdx < newLines.length && newLines[newIdx] === lcs[lcsIdx]) {
+					result.push({ type: 'context', content: oldLines[oldIdx], lineNum: oldLineNum });
+					oldIdx++;
+					newIdx++;
+					oldLineNum++;
+					lcsIdx++;
+				} else {
+					// New line was added before this context
+					result.push({ type: 'addition', content: newLines[newIdx] });
+					newIdx++;
+				}
+			} else if (oldIdx < oldLines.length && (lcsIdx >= lcs.length || oldLines[oldIdx] !== lcs[lcsIdx])) {
+				// This line is not in LCS - it was deleted
+				result.push({ type: 'deletion', content: oldLines[oldIdx], lineNum: oldLineNum });
+				oldIdx++;
+				oldLineNum++;
+			} else if (newIdx < newLines.length) {
+				// This line is new - it was added
+				result.push({ type: 'addition', content: newLines[newIdx] });
+				newIdx++;
+			}
+		}
+
+		return result;
+	}
+
+	/**
+	 * Compute the Longest Common Subsequence of two arrays of strings.
+	 */
+	function computeLCS(a: string[], b: string[]): string[] {
+		const m = a.length;
+		const n = b.length;
+
+		// Create DP table
+		const dp: number[][] = Array(m + 1)
+			.fill(null)
+			.map(() => Array(n + 1).fill(0));
+
+		// Fill DP table
+		for (let i = 1; i <= m; i++) {
+			for (let j = 1; j <= n; j++) {
+				if (a[i - 1] === b[j - 1]) {
+					dp[i][j] = dp[i - 1][j - 1] + 1;
+				} else {
+					dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+				}
+			}
+		}
+
+		// Backtrack to find LCS
+		const lcs: string[] = [];
+		let i = m,
+			j = n;
+		while (i > 0 && j > 0) {
+			if (a[i - 1] === b[j - 1]) {
+				lcs.unshift(a[i - 1]);
+				i--;
+				j--;
+			} else if (dp[i - 1][j] > dp[i][j - 1]) {
+				i--;
+			} else {
+				j--;
+			}
+		}
+
+		return lcs;
+	}
+
 	function buildDiffLines(diff: PendingDiff | null, content: string): DiffLine[] {
 		if (!diff) return [];
 
-		const lines: DiffLine[] = [];
-		const contentLines = content.split('\n');
-
-		// Find where the old value appears in content
 		const oldValue = diff.oldValue || '';
 		const newValue = diff.newValue || '';
 
-		// Simple approach: show context around the change
+		// For full_replace or when we have both old and new values, compute a proper unified diff
+		if (diff.operation === 'full_replace' || (oldValue && newValue)) {
+			return computeUnifiedDiff(oldValue, newValue);
+		}
+
+		const lines: DiffLine[] = [];
+
+		// For append operation, show new content as additions
+		if (diff.operation === 'append') {
+			const newLines = newValue.split('\n');
+			newLines.forEach((line) => {
+				lines.push({ type: 'addition', content: line });
+			});
+			return lines;
+		}
+
+		// For replace operation, try to find context
+		const contentLines = content.split('\n');
 		let foundIndex = -1;
 		if (oldValue) {
 			for (let i = 0; i < contentLines.length; i++) {
@@ -101,7 +202,7 @@
 			}
 		}
 
-		// If we couldn't find context, just show old/new directly
+		// Fallback: just show old/new directly
 		if (lines.length === 0) {
 			if (oldValue) {
 				lines.push({ type: 'deletion', content: oldValue });
@@ -177,6 +278,11 @@
 
 		// Ignore if typing in input
 		if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+			return;
+		}
+
+		// Ignore if modifier keys are pressed (Cmd+R for refresh, Ctrl+R, etc.)
+		if (event.metaKey || event.ctrlKey || event.altKey) {
 			return;
 		}
 

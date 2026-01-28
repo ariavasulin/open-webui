@@ -13,10 +13,10 @@ export const AUDIO_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1/audio`;
 export const IMAGES_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1/images`;
 export const RETRIEVAL_API_BASE_URL = `${WEBUI_BASE_URL}/api/v1/retrieval`;
 
-// YouLab API - configurable via environment variable, defaults to localhost:8100
+// YouLab API - configurable via environment variable, defaults to localhost:8200 (Ralph server)
 export const YOULAB_API_BASE_URL = browser
-	? import.meta.env.VITE_YOULAB_API_URL || 'http://localhost:8100'
-	: 'http://localhost:8100';
+	? import.meta.env.VITE_YOULAB_API_URL || 'http://localhost:8200'
+	: 'http://localhost:8200';
 
 export const WEBUI_VERSION = APP_VERSION;
 export const WEBUI_BUILD_HASH = APP_BUILD_HASH;

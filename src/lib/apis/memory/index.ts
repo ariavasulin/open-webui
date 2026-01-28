@@ -10,10 +10,13 @@ function transformBlock(data: any): MemoryBlock {
 }
 
 function transformBlockDetail(data: any): BlockDetail {
+	// The new Dolt-backed API returns 'body' (markdown) directly.
+	// Legacy API returned 'content_toml' and 'content_markdown'.
+	const body = data.body ?? data.content_markdown ?? '';
 	return {
 		label: data.label,
-		contentToml: data.content_toml,
-		contentMarkdown: data.content_markdown,
+		contentToml: data.content_toml ?? body, // Fallback to body for TOML too
+		contentMarkdown: body,
 		pendingDiffs: data.pending_diffs ?? 0
 	};
 }
@@ -198,8 +201,8 @@ export async function getBlockDiffs(
 		confidence: d.confidence,
 		createdAt: d.created_at,
 		agentId: d.agent_id,
-		oldValue: d.oldValue,
-		newValue: d.newValue
+		oldValue: d.old_value,
+		newValue: d.new_value
 	}));
 }
 

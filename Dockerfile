@@ -25,6 +25,7 @@ ARG GID=0
 ######## WebUI frontend ########
 FROM --platform=$BUILDPLATFORM node:22-alpine3.20 AS build
 ARG BUILD_HASH
+ARG VITE_YOULAB_API_URL=""
 
 # Set Node.js options (heap limit Allocation failed - JavaScript heap out of memory)
 ENV NODE_OPTIONS="--max-old-space-size=4096"
@@ -41,6 +42,7 @@ RUN npm ci --force
 
 COPY . .
 ENV APP_BUILD_HASH=${BUILD_HASH}
+ENV VITE_YOULAB_API_URL=${VITE_YOULAB_API_URL}
 RUN npm run build
 
 ######## WebUI backend ########

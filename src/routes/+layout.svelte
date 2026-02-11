@@ -30,7 +30,10 @@
 		toolServers,
 		playingNotificationSound,
 		channels,
-		channelId
+		channelId,
+		showArtifacts,
+		showControls,
+		artifactContents
 	} from '$lib/stores';
 	import { goto } from '$app/navigation';
 	import { page } from '$app/stores';
@@ -323,6 +326,19 @@
 	};
 
 	const chatEventHandler = async (event, cb) => {
+		// Artifact push — handle before any other logic
+		if (event?.data?.type === 'chat:artifact') {
+			const artifactData = event?.data?.data ?? null;
+			if (artifactData?.content) {
+				artifactContents.update((current) => {
+					return [...(current || []), { type: 'iframe', content: artifactData.content }];
+				});
+				showArtifacts.set(true);
+				showControls.set(true);
+			}
+			return;
+		}
+
 		const chat = $page.url.pathname.includes(`/c/${event.chat_id}`);
 
 		let isFocused = document.visibilityState !== 'visible';

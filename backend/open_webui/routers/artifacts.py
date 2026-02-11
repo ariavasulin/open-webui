@@ -6,7 +6,7 @@ from typing import Optional
 from fastapi import APIRouter, Depends, HTTPException, status
 from pydantic import BaseModel
 
-from open_webui.socket.main import sio
+from open_webui.socket.main import sio, get_session_ids_from_room
 from open_webui.utils.auth import get_verified_user
 
 log = logging.getLogger(__name__)
@@ -33,6 +33,14 @@ async def push_artifact(
             detail="Cannot push artifacts to other users",
         )
 
+    room = f"user:{form_data.user_id}"
+    session_ids = get_session_ids_from_room(room)
+    log.warning(
+        f"artifact_push: room={room} sessions={session_ids} "
+        f"chat_id={form_data.chat_id} title={form_data.title} "
+        f"content_len={len(form_data.content)}"
+    )
+
     await sio.emit(
         "events",
         {
@@ -46,7 +54,9 @@ async def push_artifact(
                 },
             },
         },
-        room=f"user:{form_data.user_id}",
+        room=room,
     )
+
+    log.warning("artifact_push: emit completed")
 
     return {"status": "ok"}

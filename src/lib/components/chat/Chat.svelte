@@ -350,22 +350,20 @@
 	};
 
 	const chatEventHandler = async (event, cb) => {
-		console.log(event);
+		console.log('chatEventHandler', event);
 
-		// Artifact push — doesn't require a message context
-		if (event.chat_id === $chatId || !event.chat_id) {
-			const artifactType = event?.data?.type ?? null;
-			if (artifactType === 'chat:artifact') {
-				const artifactData = event?.data?.data ?? null;
-				if (artifactData?.content) {
-					artifactContents.update((current) => {
-						return [...(current || []), { type: 'iframe', content: artifactData.content }];
-					});
-					showArtifacts.set(true);
-					showControls.set(true);
-				}
-				return;
+		// Artifact push — no chat_id or message_id required
+		if (event?.data?.type === 'chat:artifact') {
+			console.log('chat:artifact received', event?.data?.data);
+			const artifactData = event?.data?.data ?? null;
+			if (artifactData?.content) {
+				artifactContents.update((current) => {
+					return [...(current || []), { type: 'iframe', content: artifactData.content }];
+				});
+				showArtifacts.set(true);
+				showControls.set(true);
 			}
+			return;
 		}
 
 		if (event.chat_id === $chatId) {

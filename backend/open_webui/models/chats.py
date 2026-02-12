@@ -124,6 +124,7 @@ class ChatFileModel(BaseModel):
 class ChatForm(BaseModel):
     chat: dict
     folder_id: Optional[str] = None
+    user_id: Optional[str] = None  # Admin-only: create chat as this user
 
 
 class ChatImportForm(ChatForm):

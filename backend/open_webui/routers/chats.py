@@ -259,7 +259,12 @@ async def get_user_chat_list_by_user_id(
 @router.post("/new", response_model=Optional[ChatResponse])
 async def create_new_chat(form_data: ChatForm, user=Depends(get_verified_user)):
     try:
-        chat = Chats.insert_new_chat(user.id, form_data)
+        # Allow admins to create chats on behalf of other users
+        target_user_id = user.id
+        if form_data.user_id and user.role == "admin":
+            target_user_id = form_data.user_id
+
+        chat = Chats.insert_new_chat(target_user_id, form_data)
         return ChatResponse(**chat.model_dump())
     except Exception as e:
         log.exception(e)

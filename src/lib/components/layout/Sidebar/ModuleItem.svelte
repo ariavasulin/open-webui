@@ -4,9 +4,7 @@
 	import { WEBUI_API_BASE_URL } from '$lib/constants';
 	import CheckCircle from '$lib/components/icons/CheckCircle.svelte';
 	import LockClosed from '$lib/components/icons/LockClosed.svelte';
-	import { ensureModuleFolder, getMostRecentThreadInFolder } from '$lib/utils/folders';
-	import { selectedFolder } from '$lib/stores';
-	import { getFolderById } from '$lib/apis/folders';
+	import { getChatListBySearchText } from '$lib/apis/chats';
 
 	const i18n = getContext('i18n');
 
@@ -28,23 +26,16 @@
 	async function handleModuleClick(e: Event) {
 		e.preventDefault();
 
-		// Ensure folder exists for this module
-		const folderId = await ensureModuleFolder(localStorage.token, module.id, module.name);
+		// Find the most recent chat for this module by searching titles
+		// Module chats use the title format "Module Name - date"
+		const chats = await getChatListBySearchText(localStorage.token, module.name, 1);
+		const recentChat = chats?.find(
+			(c: { title: string }) => c.title.startsWith(module.name + ' - ')
+		);
 
-		// Set the selected folder so new chats go into it
-		const folder = await getFolderById(localStorage.token, folderId);
-		if (folder) {
-			selectedFolder.set(folder);
-		}
-
-		// Find most recent thread in the folder
-		const threadId = await getMostRecentThreadInFolder(localStorage.token, folderId);
-
-		if (threadId) {
-			// Navigate to existing thread
-			goto(`/c/${threadId}`);
+		if (recentChat) {
+			goto(`/c/${recentChat.id}`);
 		} else {
-			// No existing thread - create new chat with this model
 			goto(`/?model=${module.id}`);
 		}
 

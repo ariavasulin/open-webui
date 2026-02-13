@@ -334,6 +334,12 @@
 											/>
 										</div>
 
+										{#if mode === 'signin'}
+											<div class="mt-2 text-xs text-gray-500 dark:text-gray-400 text-left">
+												Demo: demo@gmail.com / demo
+											</div>
+										{/if}
+
 										{#if mode === 'signup' && $config?.features?.enable_signup_password_confirmation}
 											<div class="mt-2">
 												<label

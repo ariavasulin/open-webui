@@ -331,7 +331,7 @@
 			const artifactData = event?.data?.data ?? null;
 			if (artifactData?.content) {
 				artifactContents.update((current) => {
-					return [...(current || []), { type: 'iframe', content: artifactData.content }];
+					return [...(current || []), { type: 'iframe', content: artifactData.content, pushed: true }];
 				});
 				showArtifacts.set(true);
 				showControls.set(true);

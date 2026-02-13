@@ -152,7 +152,16 @@
 	}
 </script>
 
-{#if !$youlabMode}
+{#if $youlabMode && ($showArtifacts || $showEmbeds)}
+	<!-- Artifact/embed panel in youlabMode — rendered as a fixed side panel -->
+	<div class="border-l border-gray-50 dark:border-gray-850/30 z-10 bg-white dark:bg-gray-850 w-[45%] min-w-[350px] max-h-full overflow-y-auto">
+		{#if $showArtifacts}
+			<Artifacts {history} />
+		{:else if $showEmbeds}
+			<Embeds />
+		{/if}
+	</div>
+{:else if !$youlabMode}
 {#if !largeScreen}
 	{#if $showControls}
 		<Drawer

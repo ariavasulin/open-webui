@@ -68,7 +68,7 @@
 		updateChatById,
 		updateChatFolderIdById
 	} from '$lib/apis/chats';
-	import { ensureModuleFolder } from '$lib/utils/folders';
+
 	import { generateOpenAIChatCompletion } from '$lib/apis/openai';
 	import { processWeb, processWebSearch, processYoutubeVideo } from '$lib/apis/retrieval';
 	import { getAndUpdateUserLocation, getUserSettings } from '$lib/apis/users';
@@ -358,7 +358,7 @@
 			const artifactData = event?.data?.data ?? null;
 			if (artifactData?.content) {
 				artifactContents.update((current) => {
-					return [...(current || []), { type: 'iframe', content: artifactData.content }];
+					return [...(current || []), { type: 'iframe', content: artifactData.content, pushed: true }];
 				});
 				showArtifacts.set(true);
 				showControls.set(true);
@@ -531,27 +531,8 @@
 		}
 	};
 
-	const savedModelIds = async () => {
-		if (
-			$selectedFolder &&
-			selectedModels.filter((modelId) => modelId !== '').length > 0 &&
-			JSON.stringify($selectedFolder?.data?.model_ids) !== JSON.stringify(selectedModels)
-		) {
-			const res = await updateFolderById(localStorage.token, $selectedFolder.id, {
-				data: {
-					model_ids: selectedModels
-				}
-			});
-		}
-	};
-
-	$: if (selectedModels !== null) {
-		savedModelIds();
-	}
-
 	let pageSubscribe = null;
 	let showControlsSubscribe = null;
-	let selectedFolderSubscribe = null;
 
 	const stopAudio = () => {
 		try {
@@ -633,17 +614,6 @@
 			}
 		});
 
-		selectedFolderSubscribe = selectedFolder.subscribe(async (folder) => {
-			if (
-				folder?.data?.model_ids &&
-				JSON.stringify(selectedModels) !== JSON.stringify(folder.data.model_ids)
-			) {
-				selectedModels = folder.data.model_ids;
-
-				console.log('Set selectedModels from folder data:', selectedModels);
-			}
-		});
-
 		const chatInput = document.getElementById('chat-input');
 		chatInput?.focus();
 	});
@@ -652,7 +622,6 @@
 		try {
 			pageSubscribe();
 			showControlsSubscribe();
-			selectedFolderSubscribe();
 			chatIdUnsubscriber?.();
 			window.removeEventListener('message', onMessageHandler);
 			$socket?.off('events', chatEventHandler);
@@ -895,7 +864,10 @@
 			}
 		});
 
-		artifactContents.set(contents);
+		// Preserve any pushed artifacts (from socket events) that aren't from code blocks
+		const currentContents = get(artifactContents) || [];
+		const pushedArtifacts = currentContents.filter((c) => c.pushed);
+		artifactContents.set([...contents, ...pushedArtifacts]);
 	};
 
 	//////////////////////////
@@ -2268,22 +2240,14 @@
 		let _chatId = $chatId;
 
 		if (!$temporaryChatEnabled) {
-			// Check if this is a module chat that needs special handling
+			// Check if this is a YouLab module chat (for custom title)
 			const model = $models.find((m) => m.id === selectedModels[0]);
 			const hasYoulabModule = model?.info?.meta?.youlab_module;
-			let isModuleChat = $selectedFolder?.meta?.type === 'module' || hasYoulabModule;
-
-			// If model has youlab_module but selectedFolder isn't set, ensure the folder exists
-			let folderId = $selectedFolder?.id;
-			if (hasYoulabModule && !folderId) {
-				folderId = await ensureModuleFolder(localStorage.token, model.id, model.name);
-				isModuleChat = true;
-			}
 
 			// Generate title - use module name + date for module chats
 			let chatTitle = $i18n.t('New Chat');
-			if (isModuleChat) {
-				const moduleName = model?.name || $selectedFolder?.name || 'Chat';
+			if (hasYoulabModule) {
+				const moduleName = model?.name || 'Chat';
 				const date = new Date().toLocaleDateString('en-US', {
 					month: 'short',
 					day: 'numeric',
@@ -2305,7 +2269,7 @@
 					tags: [],
 					timestamp: Date.now()
 				},
-				folderId
+				$selectedFolder?.id ?? null
 			);
 
 			_chatId = chat.id;

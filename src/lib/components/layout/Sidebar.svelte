@@ -757,7 +757,7 @@
 					</div>
 				{/if}
 
-				{#if $user?.role === 'admin' || $user?.permissions?.workspace?.knowledge}
+				{#if !$youlabMode && ($user?.role === 'admin' || $user?.permissions?.workspace?.knowledge)}
 					<div class="">
 						<Tooltip content={$i18n.t('Files')} placement="right">
 							<a
@@ -781,7 +781,7 @@
 					</div>
 				{/if}
 
-			{#if $youlabMode && $user}
+			{#if !$youlabMode && $user}
 				<div class="">
 					<Tooltip content={$i18n.t('You')} placement="right">
 						<a
@@ -1040,7 +1040,7 @@
 						</div>
 					{/if}
 
-					{#if $user?.role === 'admin' || $user?.permissions?.workspace?.knowledge}
+					{#if !$youlabMode && ($user?.role === 'admin' || $user?.permissions?.workspace?.knowledge)}
 						<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
 							<a
 								id="sidebar-files-button"
@@ -1061,7 +1061,7 @@
 						</div>
 					{/if}
 
-					{#if $youlabMode && $user}
+					{#if !$youlabMode && $user}
 						<div class="px-[0.4375rem] flex justify-center text-gray-800 dark:text-gray-200">
 							<a
 								id="sidebar-you-button"
